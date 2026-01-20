@@ -34,6 +34,7 @@ connection.query(query, [id], (err, results) => {
     connection.query(reviewsQuery, [id], (err, reviewsResult) => {
         if (err) return next(err);
 
+        res.status(200);
         res.json({
             ...movie,
             reviews: reviewsResult,
