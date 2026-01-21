@@ -14,9 +14,13 @@ connection.query(query, (err, result)=>{
 
 function show(req, res, next) {
 const id = req.params.id
-const query = "SELECT * FROM `movies` WHERE `id` = ?";
+const query = `SELECT movies.*, CAST(AVG(reviews.vote) AS FLOAT) as avg_vote
+FROM movies
+LEFT JOIN reviews
+ON movies.id = review.movie_id
+GROUP BY movie.id`;
 
-connection.query(query, [id], (err, results) => {
+connection.query(query, [id], (err, results) => { 
     if (err) return next(err);
 
     if(results.length === 0) {
