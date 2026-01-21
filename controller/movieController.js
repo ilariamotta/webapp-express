@@ -1,19 +1,44 @@
 import connection from "../database/db_connections.js"
 
 function index(req, res, next) {
-const query = `SELECT movies.*, CAST(AVG(reviews.vote) AS FLOAT) as avg_vote
-FROM movies
-LEFT JOIN reviews
-ON movies.id = reviews.movie_id
-GROUP BY movies.id`;
+  const page = req.query.page ? parseInt(req.query.page) : 1;
+  const itemsPerPage = 3;
+  const offset = (page - 1) * itemsPerPage;
 
-connection.query(query, (err, result)=>{
+  const query = `
+    SELECT movies.*, AVG(reviews.vote) AS avg_vote
+    FROM movies
+    LEFT JOIN reviews ON movies.id = reviews.movie_id
+    GROUP BY movies.id
+    LIMIT ? OFFSET ?
+  `;
+
+  connection.query(query, [itemsPerPage, offset], (err, result) => {
     if (err) return next(err);
-    return res.json ({
+
+    const queryNumeroFilm = "SELECT COUNT(id) AS total FROM movies";
+
+    connection.query(queryNumeroFilm, (err, resultTotale) => {
+      if (err) return next(err);
+
+      const totalMovies = resultTotale[0].total;
+
+      return res.json({
+        info: {
+          total: totalMovies,
+          pages: Math.ceil(totalMovies / itemsPerPage),
+          page,
+        },
         results: result,
-    })
-})
+      });
+    });
+  });
 }
+
+
+
+
+
 
 
 function show(req, res, next) {
