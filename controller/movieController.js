@@ -6,7 +6,7 @@ function index(req, res, next) {
   const offset = (page - 1) * itemsPerPage;
 
   const query = `
-    SELECT movies.*, AVG(reviews.vote) AS avg_vote
+    SELECT movies.*, COALESCE(ROUND(AVG(reviews.vote), 1) AS avg_vote
     FROM movies
     LEFT JOIN reviews ON movies.id = reviews.movie_id
     GROUP BY movies.id
