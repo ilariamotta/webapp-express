@@ -84,8 +84,8 @@ function storeReview(req, res, next) {
 const data = req.body;
 const movieId = req.params.id;
 
-const movieQuery = `SELECT * FROM movie WHERE id = ?`
-connection.query(bookQuery, [bookId], (err, result) => {
+const movieQuery = `SELECT * FROM movies WHERE id = ?`
+connection.query(movieQuery, [movieId], (err, result) => {
   if (err) return next(err);
 
   if (result.length === 0) {
