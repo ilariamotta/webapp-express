@@ -43,10 +43,17 @@ function index(req, res, next) {
 
 
 function show(req, res, next) {
-const id = req.params.id
-const query = "SELECT * FROM `movies` WHERE `id` = ?";
+const slug = req.params.slug;
+const query = `
+    SELECT movies.*, COALESCE(ROUND(AVG(reviews.vote), 1), 0) AS avg_vote
+    FROM movies
+    LEFT JOIN reviews 
+    ON movies.id = reviews.movie_id
+    WHERE movies.slug = ?
+    GROUP BY movies.id
+    LIMIT 1`
 
-connection.query(query, [id], (err, results) => { 
+connection.query(query, [slug], (err, results) => { 
     if (err) return next(err);
 
     if(results.length === 0) {
@@ -61,7 +68,7 @@ connection.query(query, [id], (err, results) => {
 
     const reviewsQuery = "SELECT * FROM `reviews` WHERE `movie_id` = ?";
 
-    connection.query(reviewsQuery, [id], (err, reviewsResult) => {
+    connection.query(reviewsQuery, [movie.id], (err, reviewsResult) => {
         if (err) return next(err);
 
         res.status(200);
