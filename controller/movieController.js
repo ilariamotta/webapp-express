@@ -56,7 +56,7 @@ const query = `
 connection.query(query, [slug], (err, results) => { 
     if (err) return next(err);
 
-    if(results.length === 0) {
+    if(results.length === 0 || results[0].id === null) {
         res.status(404);
         return res.json({
             error: "Not found",
@@ -80,4 +80,27 @@ connection.query(query, [slug], (err, results) => {
 })
 }
 
-export default {index, show}
+function storeReview(req, res, next) {
+const data = req.body;
+const movieId = req.params.id;
+console.log("Aggiunta recensione")
+const sql = `INSERT INTO reviews (movie_id, name, vote, text) VALUES (?, ?, ?, ?)`;
+
+connection.query(sql, [movieId, data.name, data.vote, data.text],
+  (err, result) => {
+    if (err) return next (err);
+    console.log(result);
+  
+    res.status(201);
+    res.json({
+      message: "La recensione è stata aggiunta",
+      id: result.insertId,
+    })
+  }
+)
+
+
+
+}
+
+export default {index, show, storeReview}
