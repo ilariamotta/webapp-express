@@ -1,4 +1,5 @@
 import connection from "../database/db_connections.js"
+import slugify from "slugify";
 
 function index(req, res, next) {
   const page = req.query.page ? parseInt(req.query.page) : 1;
@@ -128,4 +129,44 @@ connection.query(sql, [movieId, data.name, data.vote, data.text],
 
 }
 
-export default {index, show, storeReview}
+
+function store(req, res, next) {
+  const {
+    title,
+    director,
+    genre,
+    release_year,
+    abstract
+  } = req.body;
+
+  console.log(req.body, req.file);
+
+  const slug = slugify(title, {
+    lower: true,
+    strict: true,
+  });
+
+  const image = req.file?.filename || null;
+
+  const sql = `
+    INSERT INTO movies 
+    (slug, title, director, genre, release_year, abstract, image) 
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
+
+  connection.query(
+    sql,
+    [slug, title, director, genre, release_year, abstract, image],
+    (err, result) => {
+      if (err) return next(err);
+
+      res.status(201);
+      return res.json({
+        message: "Il film è stato aggiunto",
+        movieId: result.insertId,
+      });
+    }
+  );
+}
+
+export default {index, show, storeReview, store}
